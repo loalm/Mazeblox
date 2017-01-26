@@ -1,11 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.MouseListener;
-
-import static com.sun.java.accessibility.util.AWTEventMonitor.addKeyListener;
 
 /**
  * Created by lovealmgren on 2017-01-24.
@@ -26,18 +22,18 @@ public class Mazeblox implements KeyListener {
 
     public char[][] level2 = {
             {'1','0','1','1','1','1','P','1'},
-            {'1','0','0','0','1','1','0','1'},
-            {'1','0','0','X','0','0','0','1'},
-            {'1','0','1','X','1','0','0','1'},
-            {'1','0','0','X','0','1','1','1'},
-            {'1','0','0','X','0','1','1','1'},
-            {'1','1','1','1','1','1','1','1'}};
+            {'0','X','0','1','1','1','0','1'},
+            {'1','0','X','0','X','0','0','1'},
+            {'0','X','0','0','1','1','0','1'},
+            {'1','0','1','0','1','1','0','1'},
+            {'0','X','0','0','X','0','0','1'},
+            {'1','0','1','1','1','1','1','1'}};
 
     public char[][] board;
     private static int playerX = 0;
     private static int playerY = 1;
-    private static final int winX = 3;
-    private static final int winY = 6;
+    private static int winX = 3;
+    private static int winY = 6;
 
 
     public static Renderer renderer;
@@ -53,7 +49,6 @@ public class Mazeblox implements KeyListener {
         jFrame.setSize(WIDTH,HEIGHT);
         jFrame.setResizable(false);
         jFrame.setVisible(true);
-
 
         this.board = this.level1;
 
@@ -89,18 +84,11 @@ public class Mazeblox implements KeyListener {
             x = 0;
             y += 100;
         }
-        if (playerX == winX && playerY == winY) {
-            //g.drawString("YOU WIN",100,100);
-            mazeblox.board = mazeblox.level2;
-            return;
-        }
-
     }
 
     public static void main(String[] args) {
 
         mazeblox = new Mazeblox();
-
     }
 
     static boolean move(int x1, int y1, int x2, int y2) {
@@ -131,7 +119,18 @@ public class Mazeblox implements KeyListener {
                 return true;
             }
         }
+
+
         return false;
+    }
+
+    public static void changeLevel(){
+        mazeblox.board = mazeblox.level2;
+        mazeblox.winX = 1;
+        mazeblox.winY = 0;
+        playerX = 0;
+        playerY = 6;
+        move(playerX,playerY,0,6);
     }
 
     @Override
@@ -158,6 +157,10 @@ public class Mazeblox implements KeyListener {
         }
         if (e.getKeyCode() == KeyEvent.VK_UP) {
             move(playerX,playerY,playerX-1,playerY);
+        }
+        if (playerX == winX && playerY == winY) {
+            System.out.print("hej");
+            changeLevel();
         }
     }
 
