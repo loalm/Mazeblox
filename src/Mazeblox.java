@@ -1,13 +1,23 @@
+import sun.audio.AudioData;
+import sun.audio.AudioPlayer;
+import sun.audio.AudioStream;
+import sun.audio.ContinuousAudioDataStream;
+
+import javax.sound.sampled.AudioPermission;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 /**
  * Created by lovealmgren on 2017-01-24.
  */
 public class Mazeblox implements KeyListener {
-
     public static Mazeblox mazeblox;
 
     public final int WIDTH = 700, HEIGHT = 700;
@@ -40,7 +50,6 @@ public class Mazeblox implements KeyListener {
 
     public Mazeblox() {
         JFrame jFrame = new JFrame();
-
         jFrame.addKeyListener(this);
         renderer = new Renderer();
         jFrame.add(renderer);
@@ -49,11 +58,12 @@ public class Mazeblox implements KeyListener {
         jFrame.setSize(WIDTH,HEIGHT);
         jFrame.setResizable(false);
         jFrame.setVisible(true);
-
+        music();
         this.board = this.level1;
 
         renderer.repaint();
     }
+
 
     public static void repaint(Graphics g) {
 
@@ -62,7 +72,7 @@ public class Mazeblox implements KeyListener {
         int x = 0;
         int y = 0;
 
-
+        
         for (int i = 0; i < mazeblox.board.length; i++) {
             for (int j = 0; j < mazeblox.board[0].length; j++) {
                 if (mazeblox.board[i][j] == '1') {
@@ -89,6 +99,20 @@ public class Mazeblox implements KeyListener {
     public static void main(String[] args) {
 
         mazeblox = new Mazeblox();
+    }
+
+    public static void music()
+    {
+        try
+        {
+            Clip clip = AudioSystem.getClip();
+            clip.open(AudioSystem.getAudioInputStream(new File("./music/perkunas.wav")));
+            clip.start();
+        }
+        catch (Exception exc)
+        {
+            exc.printStackTrace(System.out);
+        }
     }
 
     static boolean move(int x1, int y1, int x2, int y2) {
