@@ -1,9 +1,6 @@
-import sun.audio.AudioData;
-import sun.audio.AudioPlayer;
-import sun.audio.AudioStream;
-import sun.audio.ContinuousAudioDataStream;
 
-import javax.sound.sampled.AudioPermission;
+import org.w3c.dom.css.Rect;
+
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.swing.*;
@@ -11,16 +8,18 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 
 /**
  * Created by lovealmgren on 2017-01-24.
  */
+
 public class Mazeblox implements KeyListener {
     public static Mazeblox mazeblox;
 
-    public final int WIDTH = 700, HEIGHT = 700;
+    private static Menu menu;
+
+
+    public static final int WIDTH = 700, HEIGHT = 700;
 
     public char[][] level1 = {
             {'1','P','1','1','1','1','1'},
@@ -39,18 +38,26 @@ public class Mazeblox implements KeyListener {
             {'0','X','0','0','X','0','0','1'},
             {'1','0','1','1','1','1','1','1'}};
 
+    public enum STATE{
+        GAME,
+        MENU
+    };
+
+    public static STATE state = STATE.MENU;
+
     public char[][] board;
     private static int playerX = 0;
     private static int playerY = 1;
     private static int winX = 3;
     private static int winY = 6;
 
-
     public static Renderer renderer;
 
     public Mazeblox() {
+        menu = new Menu();
         JFrame jFrame = new JFrame();
         jFrame.addKeyListener(this);
+
         renderer = new Renderer();
         jFrame.add(renderer);
         jFrame.setTitle("Mazeblox");
@@ -60,49 +67,48 @@ public class Mazeblox implements KeyListener {
         jFrame.setVisible(true);
         music();
         this.board = this.level1;
-
         renderer.repaint();
     }
 
 
     public static void repaint(Graphics g) {
 
+        if (state == STATE.GAME) {
+            g.setColor(Color.BLUE);
+            int x = 0;
+            int y = 0;
 
-        g.setColor(Color.BLUE);
-        int x = 0;
-        int y = 0;
+            for (int i = 0; i < mazeblox.board.length; i++) {
+                for (int j = 0; j < mazeblox.board[0].length; j++) {
+                    if (mazeblox.board[i][j] == '1') {
+                        //WALL
+                        g.setColor(new Color(87, 59, 12));
+                    } else if (mazeblox.board[i][j] == 'P') {
+                        //PLAYER
+                        g.setColor(Color.GREEN);
+                    } else if (mazeblox.board[i][j] == 'X') {
+                        //ROCK
+                        g.setColor(new Color(133, 132, 119));
+                    } else if (mazeblox.board[i][j] == '0') {
+                        g.setColor(Color.BLACK);
+                    }
+                    g.fillRect(x, y, 100, 100);
 
-        
-        for (int i = 0; i < mazeblox.board.length; i++) {
-            for (int j = 0; j < mazeblox.board[0].length; j++) {
-                if (mazeblox.board[i][j] == '1') {
-                    //WALL
-                    g.setColor(new Color(87,59,12));
-                } else if (mazeblox.board[i][j] == 'P') {
-                    //PLAYER
-                    g.setColor(Color.GREEN);
-                } else if (mazeblox.board[i][j] == 'X') {
-                    //ROCK
-                    g.setColor(new Color(133,132,119));
-                } else if (mazeblox.board[i][j] == '0') {
-                    g.setColor(Color.BLACK);
+                    x += 100;
                 }
-                g.fillRect(x, y, 100, 100);
-
-                x += 100;
+                x = 0;
+                y += 100;
             }
-            x = 0;
-            y += 100;
+        } else if (state == STATE.MENU) {
+            menu.render(g);
         }
     }
 
     public static void main(String[] args) {
-
         mazeblox = new Mazeblox();
     }
 
-    public static void music()
-    {
+    public static void music() {
         try
         {
             Clip clip = AudioSystem.getClip();
@@ -143,8 +149,6 @@ public class Mazeblox implements KeyListener {
                 return true;
             }
         }
-
-
         return false;
     }
 
@@ -169,22 +173,37 @@ public class Mazeblox implements KeyListener {
 
     @Override
     public void keyReleased(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-            move(playerX,playerY,playerX,playerY+1);
-        }
-        if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-            move(playerX,playerY,playerX,playerY-1);
 
-        }
-        if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-            move(playerX,playerY,playerX+1,playerY);
-        }
-        if (e.getKeyCode() == KeyEvent.VK_UP) {
-            move(playerX,playerY,playerX-1,playerY);
-        }
-        if (playerX == winX && playerY == winY) {
-            System.out.print("hej");
-            changeLevel();
+        if (state == STATE.GAME) {
+            if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                state = STATE.MENU;
+                renderer.repaint();
+            }
+            if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+                move(playerX, playerY, playerX, playerY + 1);
+            }
+            if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+                move(playerX, playerY, playerX, playerY - 1);
+            }
+            if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+                move(playerX, playerY, playerX + 1, playerY);
+            }
+            if (e.getKeyCode() == KeyEvent.VK_UP) {
+                move(playerX, playerY, playerX - 1, playerY);
+            }
+            if (playerX == winX && playerY == winY) {
+                changeLevel();
+            }
+        } else if (state == STATE.MENU) {
+
+            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                menu.buttonFunction();
+            } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+                Menu.getNextButton(+1);
+            } else if (e.getKeyCode() == KeyEvent.VK_UP) {
+                Menu.getNextButton(-1);
+            }
+            renderer.repaint();
         }
     }
 
